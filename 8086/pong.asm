@@ -1,7 +1,23 @@
+; #############################################################################
+; Subroutine name
+;
+; Subroutine description
+;
+; Inputs - none
+; Returns - none
+;
+; #############################################################################
+
+;TODO:
+;	add player 2 led flashing
+;	add player 2 led score
+; 	add player 1 and 2 led for end game
+; 	add better comments for each subroutine
+; 	group code better based on subroutine descriptions
+
 Assume cs:code, ds:data, ss:stack
 
 data segment 
-; All variables defined within the data segment
 ; menu variables
 menu1 db "*******************************************************************************$"
 menu2 db "                               Welcome$"
@@ -18,6 +34,7 @@ menu12 db "                               p - Play Game$"
 menu13 db "                               e - Exit Game$"
 menu14 db "*******************************************************************************$"
 
+; player variables
 player1_ready db "Player 1 press enter when ready!$"
 player2_ready db "Player 2 press enter when ready!$"
 players_ready db "Players are ready, game is starting!$"
@@ -25,16 +42,17 @@ player1_score db 0
 player2_score db 0
 player2 db "Player 2 is the winner!!!$"
 player1 db "Player 1 is the winner!!!$"
-
 player1_cursor_pos db 11
 player2_cursor_pos db 11
+
+;ball variables
 ball_y_pos db 11
 ball_x_pos db 39
 ball_direction db 0
 data ends
 
 stack segment
-;Stack size and the top of the stack defined in the stack segment
+;stack size and the top of the stack defined in the stack segment
 dw 100 dup(?)
 stacktop:
 stack ends
@@ -47,12 +65,18 @@ mov ax,stack
 mov ss,ax
 mov sp, offset stacktop
 
-; Code Begin
-
+; #############################################################################
+; Main
+; #############################################################################
 call setup_ports
 call main_menu
 
-; ################################# Exit Program ################################################## 
+; #############################################################################
+; Exit Program
+;
+; This subroutine gracefully terminates the program
+;
+; #############################################################################
 exit_program:
 call clear_screen
 mov dh, 00
