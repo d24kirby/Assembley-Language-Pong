@@ -1,23 +1,19 @@
-; #############################################################################
-; Subroutine name
-;
-; Subroutine description
-;
-; Inputs - none
-; Returns - none
-;
-; #############################################################################
-
-;TODO:
-;	add player 2 led flashing
-;	add player 2 led score
-; 	add player 1 and 2 led for end game
-; 	add better comments for each subroutine
-; 	group code better based on subroutine descriptions
-
+; #############################################################################		
+; Subroutine name		
+;		
+; Subroutine description		
+;		
+; Inputs - none		
+; Returns - none		
+;		
+; #############################################################################		
+;TODO:		
+; 	add better comments for each subroutine		
+; 	group code better based on subroutine descriptions		
 Assume cs:code, ds:data, ss:stack
 
 data segment 
+
 ; menu variables
 menu1 db "*******************************************************************************$"
 menu2 db "                               Welcome$"
@@ -28,7 +24,7 @@ menu6 db "                \ \  \|\  \ \  \|\  \ \  \\ \  \ \  \___|$"
 menu7 db "                 \ \   ____\ \  \\\  \ \  \\ \  \ \  \  ___$"
 menu8 db "                  \ \  \___|\ \  \\\  \ \  \\ \  \ \  \|\  \$"
 menu9 db "                   \ \__\    \ \_______\ \__\\ \__\ \_______\$"
-menu10 db "                    \|__|     \|_______|\|__| \|__|\|_______|$"
+menu10 db "                   \|__|     \|_______|\|__| \|__|\|_______|$"
 menu11 db "	        Press the correct key to select your option$"
 menu12 db "                               p - Play Game$"
 menu13 db "                               e - Exit Game$"
@@ -52,7 +48,7 @@ ball_direction db 0
 data ends
 
 stack segment
-;stack size and the top of the stack defined in the stack segment
+;Stack size and the top of the stack defined in the stack segment
 dw 100 dup(?)
 stacktop:
 stack ends
@@ -66,16 +62,17 @@ mov ss,ax
 mov sp, offset stacktop
 
 ; #############################################################################
-; Main
+; Main		
 ; #############################################################################
 call setup_ports
 call main_menu
 
-; #############################################################################
-; Exit Program
-;
-; This subroutine gracefully terminates the program
-;
+		
+; ############################################################################# 
+; Exit Program		
+;		
+; This code block gracefully terminates the program		
+;		
 ; #############################################################################
 exit_program:
 call clear_screen
@@ -88,7 +85,10 @@ int 21h
 
 ; ################################ Main Menu Controller #############################################
 main_menu:
-
+push ax
+push bx
+push cx
+push dx 
 controller:
 mov dx, 0
 call clear_screen
@@ -107,6 +107,10 @@ call game
 jmp controller
 
 return_main_menu:
+pop dx
+pop cx
+pop bx
+pop ax
 ret
 
 ; ################################# Main Game Loop ##################################################
@@ -144,7 +148,7 @@ mov si, offset player2_score
 mov al, [si]
 add al, 1
 mov [si],al
-; led things
+call player2_leds
 jmp score
 
 score:
@@ -169,7 +173,7 @@ player2_winner:
 call clear_screen
 mov si, offset player2
 call display_win_msg
-;call p2_flash_leds
+call p2_flash_leds
 jmp return_to_main_menu
 
 return_to_main_menu:
@@ -186,7 +190,7 @@ mov si, offset player2_score
 mov al, 0
 mov [si], al
 call player1_leds
-;call player2_leds
+call player2_leds
 pop dx
 pop cx
 pop bx
@@ -279,6 +283,55 @@ pop ax
 
 ret
 
+; ################################ player 2 leds #####################################################
+player2_leds:
+push ax
+push bx
+push cx
+push dx
+
+mov dx, 142h
+
+mov al , 0ffh
+out dx, al
+
+mov si, offset player2_score
+mov bl, [si]
+cmp bl, 0h
+je player2_leds_exit
+
+mov al, 0ffh
+mov cx, 6h
+led_loop_2:
+not al
+out dx, al
+call led_sleep
+loop led_loop_2
+
+mov al, 0ffh
+out dx,al
+
+score_loop_2a:
+mov al, 00000000b
+mov cl, 00000001b
+score_loop_2b:
+or al, cl
+shl cl,1
+dec bl
+cmp bl, 0h
+jne score_loop_2b
+not al
+out dx, al
+jmp player2_leds_exit
+
+player2_leds_exit:
+pop dx
+pop cx
+pop bx
+pop ax
+
+ret
+
 ; ################################ Display Win Message #####################################################
 display_win_msg:
 push ax
@@ -314,6 +367,29 @@ not al
 out dx, al
 call led_sleep
 loop led_loop_1_flash
+
+pop dx
+pop cx
+pop bx
+pop ax
+
+ret
+
+; ################################ Player 2 Flash LEDs #####################################################
+p2_flash_leds:
+push ax
+push bx
+push cx
+push dx
+
+mov dx, 142h
+mov al, 00h
+mov cx, 8h
+led_loop_2_flash:
+not al
+out dx, al
+call led_sleep
+loop led_loop_2_flash
 
 pop dx
 pop cx
